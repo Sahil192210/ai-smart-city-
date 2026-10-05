@@ -87,15 +87,39 @@ export interface WeatherData {
   cityId: string;
   city: string;
   temperature: number;
+  feelsLike: number;
   condition: string;
   humidity: number;
   windSpeed: number;
+  windDirection: string;
+  uvIndex: number;
+  visibility: number; // in km
+  pressure: number; // in hPa
+  sunrise: string;
+  sunset: string;
   airQualityIndex: number;
-  aqiStatus: "Good" | "Moderate" | "Unhealthy";
+  aqiStatus: "Good" | "Moderate" | "Poor" | "Unhealthy";
+  aqiBreakdown: {
+    pm25: number;
+    pm10: number;
+    no2: number;
+    o3: number;
+    co: number;
+  };
+  hourly: {
+    time: string;
+    temp: number;
+    condition: string;
+    icon: string;
+    pop: number; // probability of precipitation in %
+  }[];
   forecast: {
     day: string;
     temp: number;
+    minTemp: number;
+    condition: string;
     icon: string;
+    precipitation: string;
   }[];
 }
 

@@ -111,7 +111,7 @@ Your core traits:
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: prompt, cityId, cityName: capitalize(cityId) }),
-        signal: AbortSignal.timeout(4000),
+        signal: AbortSignal.timeout(12000),
       });
 
       if (springRes.ok) {

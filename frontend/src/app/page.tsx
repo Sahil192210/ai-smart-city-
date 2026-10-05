@@ -38,7 +38,19 @@ import {
   Zap,
   Layers,
   HelpCircle,
-  Sparkle
+  Sparkle,
+  Sun,
+  Cloud,
+  CloudRain,
+  Wind,
+  Droplets,
+  Eye,
+  Gauge,
+  Sunrise,
+  Sunset,
+  Thermometer,
+  ShieldAlert,
+  CalendarDays
 } from "lucide-react";
 
 import {
@@ -1348,75 +1360,325 @@ export default function FigmaSmartCityPortal() {
             )}
 
             {/* ---------------- WEATHER TAB ---------------- */}
-            {activeTab === "weather" && (
-              <div className="space-y-6 max-w-5xl mx-auto">
-                <div>
-                  <h2 className="text-2xl font-black text-slate-900">{activeCity.name} Weather</h2>
-                  <p className="text-xs text-slate-500">Current ambient conditions and 5-day outlook</p>
-                </div>
+            {activeTab === "weather" && (() => {
+              const aqi = activeWeather.airQualityIndex;
+              let aqiStatus = "Good";
+              let aqiColor = "text-emerald-600 bg-emerald-50 border-emerald-200";
+              let aqiBarColor = "bg-emerald-500";
+              let aqiDesc = "Air quality is satisfactory and poses little or no risk to public health.";
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  {/* Big Weather Card */}
-                  <div className="lg:col-span-8 figma-card p-6 space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <CloudSun className="w-16 h-16 text-amber-500 animate-float" />
-                        <div>
-                          <div className="text-5xl font-black text-slate-900">
-                            {activeWeather.temperature}°C
-                          </div>
-                          <div className="text-xs text-slate-500 mt-1">{activeWeather.condition}</div>
-                        </div>
+              if (aqi > 250) {
+                aqiStatus = "Severe / Hazardous";
+                aqiColor = "text-purple-700 bg-purple-50 border-purple-200";
+                aqiBarColor = "bg-purple-600";
+                aqiDesc = "Emergency warnings. Everyone may experience serious health effects; avoid outdoor exertion.";
+              } else if (aqi > 180) {
+                aqiStatus = "Poor / Unhealthy";
+                aqiColor = "text-rose-700 bg-rose-50 border-rose-200";
+                aqiBarColor = "bg-rose-500";
+                aqiDesc = "Unhealthy conditions. Children, the elderly, and sensitive groups should limit prolonged outdoor activity.";
+              } else if (aqi > 100) {
+                aqiStatus = "Moderate";
+                aqiColor = "text-amber-700 bg-amber-50 border-amber-200";
+                aqiBarColor = "bg-amber-500";
+                aqiDesc = "Acceptable air quality; sensitive individuals may experience minor respiratory irritation.";
+              }
+
+              const getWeatherIcon = (cond: string, className = "w-6 h-6") => {
+                const lower = (cond || "").toLowerCase();
+                if (lower.includes("rain") || lower.includes("shower") || lower.includes("drizzle")) {
+                  return <CloudRain className={`${className} text-blue-500`} />;
+                }
+                if (lower.includes("cloud") || lower.includes("overcast") || lower.includes("haze") || lower.includes("smoke")) {
+                  return <Cloud className={`${className} text-slate-400`} />;
+                }
+                if (lower.includes("sun") || lower.includes("clear")) {
+                  return <Sun className={`${className} text-amber-500`} />;
+                }
+                return <CloudSun className={`${className} text-amber-500`} />;
+              };
+
+              return (
+                <div className="space-y-6 max-w-6xl mx-auto">
+                  {/* Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold mb-1 border border-blue-200/60">
+                        <CloudSun className="w-3.5 h-3.5" />
+                        Live Meteorological Sensor Network
+                      </div>
+                      <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                        {activeCity.name} Weather & Air Quality
+                      </h2>
+                      <p className="text-xs text-slate-500">
+                        Real-time ambient microclimate telemetry, hourly predictions & atmospheric pollutants
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-slate-500 bg-white border border-slate-200/80 rounded-xl px-3 py-2 shadow-sm self-start sm:self-auto">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                      <span>Updated 5 mins ago</span>
+                    </div>
+                  </div>
+
+                  {/* Primary Hero Row */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Main Ambient Status Card */}
+                    <div className="lg:col-span-8 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden border border-blue-900/40">
+                      <div className="absolute -right-16 -top-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+                      <div className="absolute right-12 bottom-6 opacity-10 pointer-events-none hidden md:block">
+                        <CloudSun className="w-48 h-48 text-white" />
                       </div>
 
-                      <div className="text-right text-xs text-slate-500 space-y-1">
-                        <div>Relative Humidity: <b>{activeWeather.humidity}%</b></div>
-                        <div>Wind Speed: <b>{activeWeather.windSpeed} km/h</b></div>
+                      <div className="relative z-10 space-y-6">
+                        <div className="flex flex-wrap items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15">
+                              {getWeatherIcon(activeWeather.condition, "w-14 h-14")}
+                            </div>
+                            <div>
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-5xl sm:text-6xl font-black tracking-tight">
+                                  {activeWeather.temperature}°
+                                </span>
+                                <span className="text-xl sm:text-2xl text-blue-200 font-semibold">C</span>
+                              </div>
+                              <div className="text-sm font-semibold text-blue-200 flex items-center gap-2 mt-0.5">
+                                <span>{activeWeather.condition}</span>
+                                {activeWeather.feelsLike && (
+                                  <>
+                                    <span className="text-blue-400">•</span>
+                                    <span className="text-xs text-blue-300">Feels like {activeWeather.feelsLike}°C</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Sunrise / Sunset Pill */}
+                          {(activeWeather.sunrise || activeWeather.sunset) && (
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/15 flex items-center gap-4 text-xs">
+                              {activeWeather.sunrise && (
+                                <div className="flex items-center gap-2">
+                                  <Sunrise className="w-4 h-4 text-amber-300" />
+                                  <div>
+                                    <div className="text-[10px] text-blue-200 uppercase tracking-wider font-semibold">Sunrise</div>
+                                    <div className="font-bold">{activeWeather.sunrise}</div>
+                                  </div>
+                                </div>
+                              )}
+                              {activeWeather.sunset && (
+                                <div className="flex items-center gap-2 border-l border-white/20 pl-4">
+                                  <Sunset className="w-4 h-4 text-orange-300" />
+                                  <div>
+                                    <div className="text-[10px] text-blue-200 uppercase tracking-wider font-semibold">Sunset</div>
+                                    <div className="font-bold">{activeWeather.sunset}</div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Ambient Micro-Metrics Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-white/10">
+                          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/10">
+                            <div className="flex items-center gap-1.5 text-xs text-blue-200 mb-1">
+                              <Droplets className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>Humidity</span>
+                            </div>
+                            <div className="text-xl font-bold">{activeWeather.humidity}%</div>
+                            <div className="text-[10px] text-blue-300/80">Relative dew level</div>
+                          </div>
+
+                          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/10">
+                            <div className="flex items-center gap-1.5 text-xs text-blue-200 mb-1">
+                              <Wind className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>Wind</span>
+                            </div>
+                            <div className="text-xl font-bold">{activeWeather.windSpeed} <span className="text-xs font-normal">km/h</span></div>
+                            <div className="text-[10px] text-blue-300/80">{activeWeather.windDirection || "Breeze"}</div>
+                          </div>
+
+                          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/10">
+                            <div className="flex items-center gap-1.5 text-xs text-blue-200 mb-1">
+                              <Sun className="w-3.5 h-3.5 text-amber-400" />
+                              <span>UV Index</span>
+                            </div>
+                            <div className="text-xl font-bold">{activeWeather.uvIndex ?? 6} <span className="text-xs font-normal">/ 11</span></div>
+                            <div className="text-[10px] text-blue-300/80">
+                              {(activeWeather.uvIndex || 6) >= 8 ? "Very High" : (activeWeather.uvIndex || 6) >= 5 ? "Moderate" : "Low"}
+                            </div>
+                          </div>
+
+                          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/10">
+                            <div className="flex items-center gap-1.5 text-xs text-blue-200 mb-1">
+                              <Eye className="w-3.5 h-3.5 text-violet-400" />
+                              <span>Visibility</span>
+                            </div>
+                            <div className="text-xl font-bold">{activeWeather.visibility ?? "6.0"} <span className="text-xs font-normal">km</span></div>
+                            <div className="text-[10px] text-blue-300/80">{activeWeather.pressure ? `${activeWeather.pressure} hPa` : "Clear line of sight"}</div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* 5 Day Outlook */}
-                    <div className="pt-4 border-t border-slate-100">
-                      <div className="grid grid-cols-5 gap-2 text-center text-xs">
-                        {activeWeather.forecast.map((fc, i) => (
-                          <div key={i} className="p-3 rounded-2xl bg-slate-50">
-                            <div className="text-[11px] text-slate-400 font-semibold">{fc.day}</div>
-                            <CloudSun className="w-6 h-6 text-amber-500 mx-auto my-1.5" />
-                            <div className="font-extrabold text-slate-800">{fc.temp}°</div>
+                    {/* Air Quality Index (AQI) Card */}
+                    <div className="lg:col-span-4 bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <Gauge className="w-4 h-4 text-blue-600" />
+                            Air Quality Index (AQI)
+                          </div>
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${aqiColor}`}>
+                            {aqiStatus}
+                          </span>
+                        </div>
+
+                        <div className="flex items-baseline gap-3 mt-1">
+                          <span className="text-4xl sm:text-5xl font-black text-slate-900">{aqi}</span>
+                          <span className="text-xs text-slate-500 font-semibold">US AQI Standard</span>
+                        </div>
+
+                        <div className="w-full bg-slate-100 h-3 rounded-full mt-4 overflow-hidden relative">
+                          <div
+                            className={`${aqiBarColor} h-full rounded-full transition-all duration-1000`}
+                            style={{ width: `${Math.min((aqi / 350) * 100, 100)}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-semibold">
+                          <span>0 Good</span>
+                          <span>100 Mod</span>
+                          <span>200 Poor</span>
+                          <span>300+ Severe</span>
+                        </div>
+
+                        <p className="text-xs text-slate-600 mt-4 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
+                          {aqiDesc}
+                        </p>
+                      </div>
+
+                      {/* Pollutant Breakdown Grid */}
+                      {activeWeather.aqiBreakdown && (
+                        <div className="pt-4 mt-4 border-t border-slate-100">
+                          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                            Key Pollutant Concentrations
+                          </div>
+                          <div className="grid grid-cols-5 gap-1.5 text-center">
+                            <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                              <div className="text-[10px] text-slate-400 font-bold">PM2.5</div>
+                              <div className="text-xs font-extrabold text-slate-800 mt-0.5">{activeWeather.aqiBreakdown.pm25}</div>
+                              <div className="text-[8px] text-slate-400">µg/m³</div>
+                            </div>
+                            <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                              <div className="text-[10px] text-slate-400 font-bold">PM10</div>
+                              <div className="text-xs font-extrabold text-slate-800 mt-0.5">{activeWeather.aqiBreakdown.pm10}</div>
+                              <div className="text-[8px] text-slate-400">µg/m³</div>
+                            </div>
+                            <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                              <div className="text-[10px] text-slate-400 font-bold">NO₂</div>
+                              <div className="text-xs font-extrabold text-slate-800 mt-0.5">{activeWeather.aqiBreakdown.no2}</div>
+                              <div className="text-[8px] text-slate-400">ppb</div>
+                            </div>
+                            <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                              <div className="text-[10px] text-slate-400 font-bold">O₃</div>
+                              <div className="text-xs font-extrabold text-slate-800 mt-0.5">{activeWeather.aqiBreakdown.o3}</div>
+                              <div className="text-[8px] text-slate-400">ppb</div>
+                            </div>
+                            <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                              <div className="text-[10px] text-slate-400 font-bold">CO</div>
+                              <div className="text-xs font-extrabold text-slate-800 mt-0.5">{activeWeather.aqiBreakdown.co}</div>
+                              <div className="text-[8px] text-slate-400">ppm</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Hourly Forecast Carousel/Strip */}
+                  {activeWeather.hourly && activeWeather.hourly.length > 0 && (
+                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-blue-600" />
+                          <h3 className="text-base font-bold text-slate-900">Today&apos;s Hourly Forecast</h3>
+                        </div>
+                        <span className="text-xs text-slate-400">24-Hour Microclimate Simulation</span>
+                      </div>
+
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                        {activeWeather.hourly.map((h, idx) => (
+                          <div
+                            key={idx}
+                            className={`p-3.5 rounded-2xl flex flex-col items-center justify-between gap-2 border transition-all ${
+                              idx === 2
+                                ? "bg-blue-50/70 border-blue-200 shadow-sm"
+                                : "bg-slate-50/70 border-slate-100 hover:border-slate-200"
+                            }`}
+                          >
+                            <span className="text-xs font-semibold text-slate-500">{h.time}</span>
+                            <div className="my-1">
+                              {getWeatherIcon(h.condition, "w-7 h-7")}
+                            </div>
+                            <span className="text-base font-black text-slate-900">{h.temp}°C</span>
+                            <div className="flex items-center gap-1 text-[10px] font-bold text-blue-600">
+                              <Droplets className="w-3 h-3" />
+                              <span>{h.pop}%</span>
+                            </div>
                           </div>
                         ))}
                       </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Air Quality Card */}
-                  <div className="lg:col-span-4 figma-card p-6 flex flex-col justify-between">
-                    <div>
-                      <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                        Air Quality Index (AQI)
+                  {/* 5-Day Extended Weather Outlook */}
+                  <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4 text-blue-600" />
+                        <h3 className="text-base font-bold text-slate-900">5-Day Meteorological Outlook</h3>
                       </div>
-                      <div className="text-3xl font-black text-emerald-600 mt-2">
-                        Good
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        AQI: <b>{activeWeather.airQualityIndex}</b>
-                      </div>
-
-                      <div className="w-full bg-slate-100 h-2.5 rounded-full mt-4 overflow-hidden">
-                        <div
-                          className="bg-emerald-500 h-full rounded-full transition-all duration-1000"
-                          style={{ width: `${Math.min(activeWeather.airQualityIndex, 100)}%` }}
-                        />
-                      </div>
+                      <span className="text-xs text-slate-400">High / Low Temperature Trends</span>
                     </div>
 
-                    <div className="text-[11px] text-slate-400 pt-4 border-t border-slate-100">
-                      Air quality is satisfactory and poses little or no risk to public health.
+                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                      {activeWeather.forecast.map((fc, i) => (
+                        <div
+                          key={i}
+                          className="p-4 rounded-2xl bg-slate-50/70 border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all flex flex-col justify-between"
+                        >
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-xs font-bold text-slate-700">{fc.day}</span>
+                              {fc.precipitation !== undefined && (
+                                <span className="text-[10px] text-blue-600 font-semibold flex items-center gap-0.5">
+                                  <Droplets className="w-2.5 h-2.5" />
+                                  {fc.precipitation}%
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 my-3">
+                              {getWeatherIcon(fc.condition || "Partly Cloudy", "w-8 h-8")}
+                              <div>
+                                <div className="text-lg font-black text-slate-900">{fc.temp}°C</div>
+                                {fc.minTemp && (
+                                  <div className="text-[11px] text-slate-400">Min {fc.minTemp}°C</div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="text-[11px] font-semibold text-slate-500 pt-2 border-t border-slate-200/50 truncate">
+                            {fc.condition || "Partly Cloudy"}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* ---------------- GOVERNMENT SERVICES ---------------- */}
             {activeTab === "services" && (() => {
@@ -1664,7 +1926,15 @@ export default function FigmaSmartCityPortal() {
                     <div key={p.id} className="figma-card overflow-hidden flex flex-col justify-between">
                       <div className="h-48 w-full relative bg-slate-100">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                        <img
+                          src={p.imageUrl}
+                          alt={p.name}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=1000&q=85";
+                          }}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        />
                         <span className="absolute top-3 right-3 bg-black/60 text-white text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-md">
                           ★ {p.rating}
                         </span>
